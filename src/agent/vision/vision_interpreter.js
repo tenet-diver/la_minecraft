@@ -1,5 +1,4 @@
 import { Vec3 } from 'vec3';
-import { Camera } from "./camera.js";
 import fs from 'fs';
 
 export class VisionInterpreter {
@@ -7,9 +6,12 @@ export class VisionInterpreter {
         this.agent = agent;
         this.allow_vision = allow_vision;
         this.fp = './bots/'+agent.name+'/screenshots/';
-        if (allow_vision) {
-            this.camera = new Camera(agent.bot, this.fp);
-        }
+    }
+
+    async initialize() {
+        if (!this.allow_vision) return;
+        const { Camera } = await import('./camera.js');
+        this.camera = new Camera(this.agent.bot, this.fp);
     }
 
     async lookAtPlayer(player_name, direction) {

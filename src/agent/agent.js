@@ -6,6 +6,7 @@ import { initModes } from './modes.js';
 import { initBot } from '../utils/mcdata.js';
 import { containsCommand, commandExists, executeCommand, truncCommandMessage, isAction, blacklistCommands } from './commands/index.js';
 import { ActionManager } from './action_manager.js';
+import { handoffEvent, prepareHandoffAgent } from './tasks/handoff_telemetry.js';
 import { NPCContoller } from './npc/controller.js';
 import { MemoryBank } from './memory_bank.js';
 import { SelfPrompter } from './self_prompter.js';
@@ -109,9 +110,10 @@ export class Agent {
         this.bot.once('spawn', async () => {
             try {
                 clearTimeout(spawnTimeout);
-                addBrowserViewer(this.bot, count_id);
+                await addBrowserViewer(this.bot, count_id);
                 console.log('Initializing vision intepreter...');
                 this.vision_interpreter = new VisionInterpreter(this, settings.allow_vision);
+                await this.vision_interpreter.initialize();
 
                 // wait for a bit so stats are not undefined
                 await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -119,6 +121,16 @@ export class Agent {
                 console.log(`${this.name} spawned.`);
                 this.clearBotLogs();
               
+                if (settings.task?.handoff_experiment) {
+                    await prepareHandoffAgent(this, settings.task);
+                    if (process.env.MINECOLLAB_HANDOFF_SCRIPTED !== '1') {
+                        this._setupEventHandlers(null, null);
+                        this.startEvents();
+                        await this.task.setAgentGoal();
+                    }
+                    return;
+                }
+
                 this._setupEventHandlers(save_data, init_message);
                 this.startEvents();
               
@@ -139,6 +151,10 @@ export class Agent {
 
             } catch (error) {
                 console.error('Error in spawn event:', error);
+                if (settings.task?.handoff_experiment) {
+                    handoffEvent('agent_error', { agent: count_id, stage: 'spawn' });
+                    process.exit(1);
+                }
                 process.exit(0);
             }
         });
@@ -362,6 +378,9 @@ export class Agent {
                 let execute_res = await executeCommand(this, res);
 
                 console.log('Agent executed:', command_name, 'and got:', execute_res);
+                if (settings.task?.handoff_experiment) {
+                    handoffEvent('command', { agent: this.count_id, name: command_name });
+                }
                 used_command = true;
 
                 if (execute_res)
@@ -535,7 +554,7 @@ export class Agent {
         process.exit(code);
     }
     async checkTaskDone() {
-        if (this.task.data) {
+        if (this.task.data && !this.task.data.handoff_experiment) {
             let res = this.task.isDone();
             if (res) {
                 await this.history.add('system', `Task ended with score : ${res.score}`);

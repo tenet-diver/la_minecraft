@@ -246,7 +246,7 @@ export class Task {
         if (task_data) {
             console.log('Starting task', task_data.task_id);
             console.log("Task start time set to", this.taskStartTime);
-            if (task_data.task_id.endsWith('hells_kitchen')) {
+            if (!task_data.handoff_experiment && task_data.task_id.endsWith('hells_kitchen')) {
                 // Reset hells_kitchen progress when a new task starts
                 hellsKitchenProgressManager.resetTask(task_data.task_id);
                 console.log('Reset Hells Kitchen progress for new task');

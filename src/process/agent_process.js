@@ -1,3 +1,4 @@
+import { handoffEvent } from '../agent/tasks/handoff_telemetry.js';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { logoutAgent } from '../mindcraft/mindserver.js';
@@ -34,6 +35,11 @@ export class AgentProcess {
             this.running = false;
             logoutAgent(this.name);
             
+            if (process.env.MINECOLLAB_HANDOFF_DIR) {
+                handoffEvent('agent_exit', { agent: count_id, code, signal });
+                return;
+            }
+
             if (code > 1) {
                 console.log(`Ending task`);
                 process.exit(code);

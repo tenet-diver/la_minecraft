@@ -84,7 +84,10 @@ export class Prompter {
                 embedding_model_profile = null;
             }
         }
-        if (embedding_model_profile) {
+        if (settings.task?.handoff_experiment) {
+            // This experiment uses fixed command docs and no retrieved examples.
+            this.embedding_model = null;
+        } else if (embedding_model_profile) {
             this.embedding_model = createModel(embedding_model_profile);
         }
         else {

@@ -1,6 +1,7 @@
 import OpenAIApi from 'openai';
 import { getKey, hasKey } from '../utils/keys.js';
 import { strictFormat } from '../utils/text.js';
+import { handoffEvent } from '../agent/tasks/handoff_telemetry.js';
 
 export class GPT {
     static prefix = 'openai';
@@ -30,6 +31,7 @@ export class GPT {
         let model = this.model_name || "gpt-5.4-mini";
 
         let res = null;
+        const started = Date.now();
 
         try {
             console.log('Awaiting openai api response from model', model);
@@ -68,6 +70,11 @@ export class GPT {
                 });
                 console.log('Received.');
                 res = response.output_text;
+                handoffEvent('model_call', {
+                    model: response.model, elapsed_ms: Date.now() - started,
+                    input_tokens: response.usage?.input_tokens,
+                    output_tokens: response.usage?.output_tokens
+                });
                 let stop_seq_index = res.indexOf(stop_seq);
                 res = stop_seq_index !== -1 ? res.slice(0, stop_seq_index) : res;
             }
@@ -81,6 +88,7 @@ export class GPT {
                 res = 'Vision is only supported by certain models.';
             } else {
                 console.log(err);
+                handoffEvent('provider_error', { status: err.status, code: err.code });
                 res = 'My brain disconnected, try again.';
             }
         }

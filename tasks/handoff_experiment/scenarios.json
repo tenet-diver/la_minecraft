@@ -1,0 +1,21 @@
+{
+  "recipes": {
+    "bread": {"wheat": 3},
+    "golden_apple": {"apple": 1, "gold_ingot": 8},
+    "cookie": {"wheat": 2, "cocoa_beans": 1},
+    "pumpkin_pie": {"pumpkin": 1, "egg": 1, "sugar": 1},
+    "mushroom_stew": {"red_mushroom": 1, "brown_mushroom": 1, "bowl": 1},
+    "beetroot_soup": {"beetroot": 6, "bowl": 1}
+  },
+  "practice": {
+    "practice_split": [["bread", "golden_apple"], [{"wheat": 3, "gold_ingot": 5}, {"apple": 1, "gold_ingot": 3}]],
+    "practice_swap": [["golden_apple", "bread"], [{"apple": 1, "gold_ingot": 5}, {"wheat": 3, "gold_ingot": 3}]],
+    "practice_cross": [["bread", "golden_apple"], [{"apple": 1, "gold_ingot": 8}, {"wheat": 3}]],
+    "practice_even": [["bread", "golden_apple"], [{"wheat": 2, "apple": 1, "gold_ingot": 6}, {"wheat": 1, "gold_ingot": 2}]]
+  },
+  "held_out": {
+    "held_out_role": [["golden_apple", "bread"], [{"wheat": 1, "gold_ingot": 2}, {"apple": 1, "wheat": 2, "gold_ingot": 6}]],
+    "held_out_new": [["cookie", "pumpkin_pie"], [{"wheat": 2, "sugar": 1}, {"cocoa_beans": 1, "pumpkin": 1, "egg": 1}]],
+    "held_out_cross": [["mushroom_stew", "beetroot_soup"], [{"red_mushroom": 1, "beetroot": 6, "bowl": 1}, {"brown_mushroom": 1, "bowl": 1}]]
+  }
+}

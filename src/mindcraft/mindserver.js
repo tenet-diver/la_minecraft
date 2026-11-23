@@ -1,3 +1,4 @@
+import { handoffEvent } from '../agent/tasks/handoff_telemetry.js';
 import { Server } from 'socket.io';
 import express from 'express';
 import http from 'http';
@@ -203,6 +204,7 @@ export function createMindServer(host_public = false, port = 8080) {
                 return;
             }
             console.log(`${curAgentName} sending message to ${agentName}: ${json.message}`);
+            handoffEvent('message', { from: curAgentName, to: agentName, text: json.message });
             agent_connections[agentName]?.socket?.emit('chat-message', curAgentName, json);
         });
 
